@@ -137,6 +137,20 @@
 
     .card-flight .game-card { border-color: rgba(100, 200, 255, 0.3); }
     .card-flight .game-card:hover { border-color: rgba(100, 200, 255, 0.6); }
+
+    .card-minesweeper .game-card { border-color: rgba(100, 255, 150, 0.3); }
+    .card-minesweeper .game-card:hover { border-color: rgba(100, 255, 150, 0.6); }
+
+    .icon-mine {
+      font-size: 56px;
+      line-height: 1;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
   </style>
 </head>
 <body>
@@ -158,6 +172,13 @@
         <span class="game-icon"><img src="flight/plane.png" alt="Airplane" class="icon-plane"></span>
         <div class="game-title">Sky Pilot</div>
         <div class="game-desc">Fly your plane, dodge obstacles, and land safely!</div>
+      </a>
+    </div>
+    <div class="card-minesweeper">
+      <a href="/minesweeper/" class="game-card">
+        <span class="game-icon"><span class="icon-mine">💣</span></span>
+        <div class="game-title">Minesweeper</div>
+        <div class="game-desc">Find all the safe squares without hitting a mine!</div>
       </a>
     </div>
   </div>

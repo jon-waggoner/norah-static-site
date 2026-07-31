@@ -16,22 +16,18 @@ let levelCompleteTimer = 0;
 let bgGradient;
 let planeImg;
 let dragonImg;
-let cannonImg;
 let touchActive = false;
 let stars = [];
-let tanks = [];
-let projectiles = [];
 
 function preload() {
   planeImg = loadImage("plane.png");
   dragonImg = loadImage("dragon.png");
-  cannonImg = loadImage("cannon.png");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   groundY = height - 80;
-  for (let i = 0; i < 150; i++) {
+  for (let i = 0; i < 60; i++) {
     stars.push({ x: random(width), y: random(groundY), size: random(1, 3), twinkle: random(TWO_PI) });
   }
   resetLevel();
@@ -43,8 +39,6 @@ function resetLevel() {
   obstacles = [];
   clouds = [];
   crashParticles = [];
-  tanks = [];
-  projectiles = [];
 
   plane = {
     x: 150,
@@ -111,18 +105,6 @@ function generateObstacles() {
     });
   }
 
-  let tankCount = 4 + level * 2;
-  for (let i = 0; i < tankCount; i++) {
-    let tx = random(safeZoneEnd, landingZoneStart);
-    tanks.push({
-      x: tx,
-      y: groundY,
-      w: 50,
-      h: 25,
-      lastShot: 0,
-      shootInterval: floor(random(90, 180)),
-    });
-  }
 }
 
 
@@ -156,18 +138,13 @@ function draw() {
   drawRunway(runwayStart, runwayEnd);
   drawRunway(landingRunwayStart, landingRunwayStart + 800);
   drawObstacles();
-  drawTanks();
   pop();
-
-  drawProjectiles();
 
   if (state === "start") {
     drawPlane();
     drawStartScreen();
   } else if (state === "flying") {
     updatePlane();
-    updateTanks();
-    updateProjectiles();
     checkCollisions();
     drawPlane();
     drawHUD();
@@ -191,15 +168,24 @@ function draw() {
 function drawSky() {
   for (let y = 0; y < height; y++) {
     let t = map(y, 0, height, 0, 1);
-    let r = lerp(5, 25, t);
-    let g = lerp(5, 15, t);
-    let b = lerp(30, 60, t);
+    let r, g, b;
+    if (t < 0.5) {
+      let t2 = map(t, 0, 0.5, 0, 1);
+      r = lerp(40, 180, t2);
+      g = lerp(20, 80, t2);
+      b = lerp(80, 100, t2);
+    } else {
+      let t2 = map(t, 0.5, 1, 0, 1);
+      r = lerp(180, 255, t2);
+      g = lerp(80, 150, t2);
+      b = lerp(100, 50, t2);
+    }
     stroke(r, g, b);
     line(0, y, width, y);
   }
   noStroke();
   for (let s of stars) {
-    let brightness = 180 + 75 * sin(frameCount * 0.03 + s.twinkle);
+    let brightness = 60 + 30 * sin(frameCount * 0.03 + s.twinkle);
     fill(255, 255, 220, brightness);
     circle(s.x, s.y, s.size);
   }
@@ -207,14 +193,14 @@ function drawSky() {
 
 function drawMountains() {
   for (let m of mountains) {
-    fill(m.shade * 0.4, m.shade * 0.4 + 10, m.shade * 0.4 + 5);
+    fill(30, 15, 40);
     noStroke();
     triangle(
       m.x, groundY,
       m.x + m.w / 2, groundY - m.h,
       m.x + m.w, groundY
     );
-    fill(m.shade * 0.5, m.shade * 0.5 + 12, m.shade * 0.5 + 8);
+    fill(35, 20, 50);
     triangle(
       m.x + m.w * 0.3, groundY,
       m.x + m.w / 2, groundY - m.h,
@@ -225,7 +211,7 @@ function drawMountains() {
 
 function drawClouds() {
   for (let c of clouds) {
-    fill(60, 60, 80, 120);
+    fill(255, 180, 120, 150);
     noStroke();
     ellipse(c.x, c.y, c.w, c.h);
     ellipse(c.x - c.w * 0.25, c.y + 5, c.w * 0.6, c.h * 0.7);
@@ -234,11 +220,11 @@ function drawClouds() {
 }
 
 function drawGround() {
-  fill(20, 50, 20);
+  fill(40, 60, 30);
   noStroke();
   rect(-500, groundY, levelLength + 2000, height - groundY + 100);
 
-  fill(15, 40, 15);
+  fill(35, 50, 25);
   for (let x = -500; x < levelLength + 1000; x += 60) {
     ellipse(x, groundY, 80, 20);
   }
@@ -430,77 +416,6 @@ function drawCrashParticles() {
     );
     fill(c);
     circle(p.x, p.y, p.size * p.life);
-  }
-}
-
-function drawTanks() {
-  for (let t of tanks) {
-    push();
-    translate(t.x, t.y);
-    // cannon sprite - sits on the ground, barrel points up
-    imageMode(CENTER);
-    image(cannonImg, 0, -25, 50, 60);
-    // muzzle flash
-    if (frameCount - t.lastShot < 8) {
-      fill(255, 220, 80, 240);
-      noStroke();
-      circle(0, -55, 12);
-      fill(255, 150, 30, 160);
-      circle(0, -57, 18);
-    }
-    pop();
-  }
-}
-
-function updateTanks() {
-  for (let t of tanks) {
-    let screenX = t.x - scrollX;
-    if (screenX > -100 && screenX < width + 100) {
-      if (frameCount - t.lastShot > t.shootInterval) {
-        t.lastShot = frameCount;
-        let dx = plane.x - screenX;
-        let dy = plane.y - (t.y - 42);
-        let angle = atan2(dy, dx) + random(-0.15, 0.15);
-        let spd = 5 + random(2);
-        projectiles.push({
-          x: screenX,
-          y: t.y - 42,
-          vx: cos(angle) * spd,
-          vy: sin(angle) * spd,
-          life: 1.0,
-        });
-      }
-    }
-  }
-}
-
-function drawProjectiles() {
-  for (let p of projectiles) {
-    noStroke();
-    fill(255, 50, 20, p.life * 120);
-    circle(p.x, p.y, 18);
-    fill(255, 80, 20, p.life * 200);
-    circle(p.x, p.y, 10);
-    fill(255, 200, 60, p.life * 255);
-    circle(p.x, p.y, 5);
-  }
-}
-
-function updateProjectiles() {
-  for (let i = projectiles.length - 1; i >= 0; i--) {
-    let p = projectiles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.life -= 0.008;
-    if (p.life <= 0 || p.y < -20) {
-      projectiles.splice(i, 1);
-      continue;
-    }
-    if (dist(p.x, p.y, plane.x, plane.y) < 25) {
-      projectiles.splice(i, 1);
-      triggerCrash();
-      return;
-    }
   }
 }
 
