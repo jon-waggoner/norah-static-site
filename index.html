@@ -3,24 +3,144 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Star Catcher</title>
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <title>Norah's Games</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      margin: 0;
-      overflow: hidden;
-      background: #0a0a2e;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0a0a2e 0%, #1a1a4e 50%, #2a1a3e 100%);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
+      justify-content: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
     }
-    canvas {
+
+    .stars {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.3; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.3); }
+    }
+
+    h1 {
+      color: #ffd700;
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      z-index: 1;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.1rem;
+      margin-bottom: 3rem;
+      z-index: 1;
+    }
+
+    .games {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      z-index: 1;
+      padding: 0 1rem;
+    }
+
+    .game-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      width: 260px;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .game-card:hover {
+      transform: translateY(-8px);
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .game-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
       display: block;
     }
+
+    .game-title {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .game-desc {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .card-stars .game-card { border-color: rgba(255, 215, 0, 0.3); }
+    .card-stars .game-card:hover { border-color: rgba(255, 215, 0, 0.6); }
+
+    .card-flight .game-card { border-color: rgba(100, 200, 255, 0.3); }
+    .card-flight .game-card:hover { border-color: rgba(100, 200, 255, 0.6); }
   </style>
 </head>
 <body>
-  <script src="game.js"></script>
+  <div class="stars" id="stars"></div>
+
+  <h1>Norah's Games</h1>
+  <p class="subtitle">Pick a game to play!</p>
+
+  <div class="games">
+    <div class="card-stars">
+      <a href="/star-catcher/" class="game-card">
+        <span class="game-icon">&#11088;</span>
+        <div class="game-title">Star Catcher</div>
+        <div class="game-desc">Catch falling stars in your basket! Watch out for the bonus puppy!</div>
+      </a>
+    </div>
+    <div class="card-flight">
+      <a href="/flight/" class="game-card">
+        <span class="game-icon">&#9992;&#65039;</span>
+        <div class="game-title">Sky Pilot</div>
+        <div class="game-desc">Fly your plane, dodge obstacles, and land safely!</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const container = document.getElementById('stars');
+    for (let i = 0; i < 80; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      container.appendChild(star);
+    }
+  </script>
 </body>
 </html>
