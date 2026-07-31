@@ -476,28 +476,33 @@ function drawTanks() {
     push();
     translate(t.x, t.y);
     // treads
-    fill(40, 50, 30);
+    fill(90, 90, 80);
     noStroke();
     rect(-25, -8, 50, 10, 4);
-    fill(30, 40, 20);
+    fill(70, 70, 60);
     for (let wx = -22; wx < 23; wx += 9) {
       circle(wx, -3, 8);
     }
     // body
-    fill(60, 80, 40);
+    fill(130, 130, 110);
     rect(-20, -18, 40, 12, 3);
     // turret
-    fill(50, 70, 35);
+    fill(110, 110, 95);
     ellipse(0, -22, 24, 14);
     // barrel
-    stroke(40, 55, 25);
-    strokeWeight(3);
+    stroke(100, 100, 85);
+    strokeWeight(4);
     line(0, -24, 0, -40);
     noStroke();
+    // red warning light
+    fill(255, 40, 40, 180 + 75 * sin(frameCount * 0.1));
+    circle(0, -22, 5);
     // muzzle flash
-    if (frameCount - t.lastShot < 5) {
-      fill(255, 200, 50, 200);
-      circle(0, -42, 8);
+    if (frameCount - t.lastShot < 8) {
+      fill(255, 220, 80, 240);
+      circle(0, -42, 12);
+      fill(255, 150, 30, 160);
+      circle(0, -44, 18);
     }
     pop();
   }
@@ -509,11 +514,15 @@ function updateTanks() {
     if (screenX > -100 && screenX < width + 100) {
       if (frameCount - t.lastShot > t.shootInterval) {
         t.lastShot = frameCount;
+        let dx = plane.x - screenX;
+        let dy = plane.y - (t.y - 42);
+        let angle = atan2(dy, dx) + random(-0.15, 0.15);
+        let spd = 5 + random(2);
         projectiles.push({
-          x: t.x - scrollX,
+          x: screenX,
           y: t.y - 42,
-          vy: -6 - random(2),
-          vx: random(-0.5, 0.5),
+          vx: cos(angle) * spd,
+          vy: sin(angle) * spd,
           life: 1.0,
         });
       }
@@ -524,10 +533,12 @@ function updateTanks() {
 function drawProjectiles() {
   for (let p of projectiles) {
     noStroke();
-    fill(255, 100, 30, p.life * 255);
-    circle(p.x, p.y, 6);
-    fill(255, 200, 50, p.life * 150);
-    circle(p.x, p.y - 4, 4);
+    fill(255, 50, 20, p.life * 120);
+    circle(p.x, p.y, 18);
+    fill(255, 80, 20, p.life * 200);
+    circle(p.x, p.y, 10);
+    fill(255, 200, 60, p.life * 255);
+    circle(p.x, p.y, 5);
   }
 }
 
