@@ -15,6 +15,7 @@ let crashParticles = [];
 let levelCompleteTimer = 0;
 let bgGradient;
 let planeImg;
+let touchActive = false;
 
 function preload() {
   planeImg = loadImage("plane.png");
@@ -268,7 +269,7 @@ function drawPlane() {
 
 function updatePlane() {
   let lift = 0;
-  if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
+  if (keyIsDown(UP_ARROW) || keyIsDown(87) || touchActive) {
     lift = -0.6;
     plane.thrust = true;
   } else if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
@@ -422,12 +423,12 @@ function drawStartScreen() {
 
   textSize(18);
   fill(200);
-  text("Use UP/DOWN arrows to fly", width / 2, height / 2 + 30);
+  text("UP/DOWN arrows or tap and hold to fly", width / 2, height / 2 + 30);
   text("Take off, avoid obstacles, and land safely!", width / 2, height / 2 + 58);
 
   fill(255, 220, 100, 180 + 70 * sin(frameCount * 0.08));
   textSize(22);
-  text("Press SPACE to start", width / 2, height / 2 + 110);
+  text("Press SPACE or tap to start", width / 2, height / 2 + 110);
 }
 
 function drawCrashScreen() {
@@ -448,7 +449,7 @@ function drawCrashScreen() {
 
   fill(200);
   textSize(18);
-  text("Press SPACE to try again", width / 2, height / 2 + 65);
+  text("Press SPACE or tap to try again", width / 2, height / 2 + 65);
 }
 
 function drawLandedScreen() {
@@ -487,4 +488,21 @@ function keyPressed() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   groundY = height - 80;
+}
+
+function touchStarted() {
+  if (state === "start") {
+    state = "flying";
+    plane.vy = -3;
+  } else if (state === "crashed") {
+    state = "start";
+    resetLevel();
+  }
+  touchActive = true;
+  return false;
+}
+
+function touchEnded() {
+  touchActive = false;
+  return false;
 }
