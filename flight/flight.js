@@ -16,6 +16,7 @@ let levelCompleteTimer = 0;
 let bgGradient;
 let planeImg;
 let dragonImg;
+let cannonImg;
 let touchActive = false;
 let stars = [];
 let tanks = [];
@@ -24,6 +25,7 @@ let projectiles = [];
 function preload() {
   planeImg = loadImage("plane.png");
   dragonImg = loadImage("dragon.png");
+  cannonImg = loadImage("cannon.png");
 }
 
 function setup() {
@@ -435,34 +437,16 @@ function drawTanks() {
   for (let t of tanks) {
     push();
     translate(t.x, t.y);
-    // treads
-    fill(90, 90, 80);
-    noStroke();
-    rect(-25, -8, 50, 10, 4);
-    fill(70, 70, 60);
-    for (let wx = -22; wx < 23; wx += 9) {
-      circle(wx, -3, 8);
-    }
-    // body
-    fill(130, 130, 110);
-    rect(-20, -18, 40, 12, 3);
-    // turret
-    fill(110, 110, 95);
-    ellipse(0, -22, 24, 14);
-    // barrel
-    stroke(100, 100, 85);
-    strokeWeight(4);
-    line(0, -24, 0, -40);
-    noStroke();
-    // red warning light
-    fill(255, 40, 40, 180 + 75 * sin(frameCount * 0.1));
-    circle(0, -22, 5);
+    // cannon sprite - sits on the ground, barrel points up
+    imageMode(CENTER);
+    image(cannonImg, 0, -25, 50, 60);
     // muzzle flash
     if (frameCount - t.lastShot < 8) {
       fill(255, 220, 80, 240);
-      circle(0, -42, 12);
+      noStroke();
+      circle(0, -55, 12);
       fill(255, 150, 30, 160);
-      circle(0, -44, 18);
+      circle(0, -57, 18);
     }
     pop();
   }
