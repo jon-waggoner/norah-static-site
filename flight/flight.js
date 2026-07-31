@@ -16,6 +16,9 @@ let levelCompleteTimer = 0;
 let bgGradient;
 let planeImg;
 let touchActive = false;
+let stars = [];
+let tanks = [];
+let projectiles = [];
 
 function preload() {
   planeImg = loadImage("plane.png");
@@ -24,6 +27,9 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   groundY = height - 80;
+  for (let i = 0; i < 150; i++) {
+    stars.push({ x: random(width), y: random(groundY), size: random(1, 3), twinkle: random(TWO_PI) });
+  }
   resetLevel();
 }
 
@@ -33,6 +39,8 @@ function resetLevel() {
   obstacles = [];
   clouds = [];
   crashParticles = [];
+  tanks = [];
+  projectiles = [];
 
   plane = {
     x: 150,
@@ -70,7 +78,6 @@ function generateObstacles() {
   let safeZoneEnd = runwayEnd + 300;
   let landingZoneStart = landingRunwayStart - 300;
   let buildingCount = 6 + level * 3;
-  let birdCount = 24 + level * 8;
 
   for (let i = 0; i < buildingCount; i++) {
     let ox = random(safeZoneEnd, landingZoneStart);
@@ -85,15 +92,31 @@ function generateObstacles() {
     });
   }
 
-  for (let i = 0; i < birdCount; i++) {
+  let dragonCount = 8 + level * 3;
+  for (let i = 0; i < dragonCount; i++) {
     let ox = random(safeZoneEnd, landingZoneStart);
     obstacles.push({
-      type: "bird",
+      type: "dragon",
       x: ox,
-      y: random(60, groundY - 100),
-      w: 30,
-      h: 15,
+      y: random(60, groundY - 120),
+      w: 50,
+      h: 30,
       wingPhase: random(TWO_PI),
+      fireTimer: random(60, 120),
+      fireLength: 0,
+    });
+  }
+
+  let tankCount = 4 + level * 2;
+  for (let i = 0; i < tankCount; i++) {
+    let tx = random(safeZoneEnd, landingZoneStart);
+    tanks.push({
+      x: tx,
+      y: groundY,
+      w: 50,
+      h: 25,
+      lastShot: 0,
+      shootInterval: floor(random(90, 180)),
     });
   }
 }
@@ -129,13 +152,18 @@ function draw() {
   drawRunway(runwayStart, runwayEnd);
   drawRunway(landingRunwayStart, landingRunwayStart + 800);
   drawObstacles();
+  drawTanks();
   pop();
+
+  drawProjectiles();
 
   if (state === "start") {
     drawPlane();
     drawStartScreen();
   } else if (state === "flying") {
     updatePlane();
+    updateTanks();
+    updateProjectiles();
     checkCollisions();
     drawPlane();
     drawHUD();
@@ -159,24 +187,30 @@ function draw() {
 function drawSky() {
   for (let y = 0; y < height; y++) {
     let t = map(y, 0, height, 0, 1);
-    let r = lerp(100, 200, t);
-    let g = lerp(180, 220, t);
-    let b = lerp(255, 240, t);
+    let r = lerp(5, 25, t);
+    let g = lerp(5, 15, t);
+    let b = lerp(30, 60, t);
     stroke(r, g, b);
     line(0, y, width, y);
+  }
+  noStroke();
+  for (let s of stars) {
+    let brightness = 180 + 75 * sin(frameCount * 0.03 + s.twinkle);
+    fill(255, 255, 220, brightness);
+    circle(s.x, s.y, s.size);
   }
 }
 
 function drawMountains() {
   for (let m of mountains) {
-    fill(m.shade, m.shade + 20, m.shade + 10);
+    fill(m.shade * 0.4, m.shade * 0.4 + 10, m.shade * 0.4 + 5);
     noStroke();
     triangle(
       m.x, groundY,
       m.x + m.w / 2, groundY - m.h,
       m.x + m.w, groundY
     );
-    fill(m.shade + 15, m.shade + 35, m.shade + 25);
+    fill(m.shade * 0.5, m.shade * 0.5 + 12, m.shade * 0.5 + 8);
     triangle(
       m.x + m.w * 0.3, groundY,
       m.x + m.w / 2, groundY - m.h,
@@ -187,7 +221,7 @@ function drawMountains() {
 
 function drawClouds() {
   for (let c of clouds) {
-    fill(255, 255, 255, 180);
+    fill(60, 60, 80, 120);
     noStroke();
     ellipse(c.x, c.y, c.w, c.h);
     ellipse(c.x - c.w * 0.25, c.y + 5, c.w * 0.6, c.h * 0.7);
@@ -196,11 +230,11 @@ function drawClouds() {
 }
 
 function drawGround() {
-  fill(80, 160, 80);
+  fill(20, 50, 20);
   noStroke();
   rect(-500, groundY, levelLength + 2000, height - groundY + 100);
 
-  fill(70, 140, 70);
+  fill(15, 40, 15);
   for (let x = -500; x < levelLength + 1000; x += 60) {
     ellipse(x, groundY, 80, 20);
   }
@@ -234,18 +268,77 @@ function drawObstacles() {
           rect(wx, wy, 8, 12);
         }
       }
-    } else if (o.type === "bird") {
-      let flap = sin(frameCount * 0.15 + o.wingPhase) * 10;
+    } else if (o.type === "dragon") {
+      let flap = sin(frameCount * 0.1 + o.wingPhase) * 15;
       push();
       translate(o.x, o.y);
-      fill(40);
+
+      // wings
+      fill(80, 20, 20);
       noStroke();
-      ellipse(0, 0, 15, 8);
-      stroke(40);
+      beginShape();
+      vertex(0, -5);
+      vertex(-20, -25 + flap);
+      vertex(-10, -10 + flap * 0.5);
+      vertex(0, -3);
+      endShape(CLOSE);
+      beginShape();
+      vertex(0, -5);
+      vertex(20, -25 + flap);
+      vertex(10, -10 + flap * 0.5);
+      vertex(0, -3);
+      endShape(CLOSE);
+
+      // body
+      fill(60, 140, 40);
+      ellipse(0, 0, 35, 16);
+
+      // head
+      fill(50, 120, 35);
+      ellipse(20, -3, 16, 12);
+
+      // eye
+      fill(255, 200, 0);
+      circle(24, -5, 4);
+      fill(0);
+      circle(24.5, -5, 2);
+
+      // horns
+      stroke(100, 80, 30);
       strokeWeight(2);
-      noFill();
-      arc(-10, -2, 20, flap, PI, TWO_PI);
-      arc(10, -2, 20, flap, PI, TWO_PI);
+      line(18, -9, 15, -16);
+      line(22, -9, 25, -16);
+      noStroke();
+
+      // tail
+      fill(50, 110, 30);
+      beginShape();
+      vertex(-17, 0);
+      vertex(-35, -8);
+      vertex(-30, 0);
+      vertex(-35, 8);
+      endShape(CLOSE);
+
+      // fire breath
+      o.fireTimer--;
+      if (o.fireTimer <= 0) {
+        o.fireLength = min(o.fireLength + 2, 40);
+        if (o.fireLength >= 40) {
+          o.fireTimer = random(90, 160);
+          o.fireLength = 0;
+        }
+      }
+      if (o.fireLength > 0) {
+        for (let f = 0; f < o.fireLength; f += 4) {
+          let flicker = random(-3, 3);
+          let alpha = map(f, 0, o.fireLength, 255, 50);
+          let r = 255;
+          let g = map(f, 0, o.fireLength, 200, 50);
+          fill(r, g, 0, alpha);
+          circle(28 + f, -3 + flicker, map(f, 0, o.fireLength, 8, 3));
+        }
+      }
+
       pop();
     }
   }
@@ -326,8 +419,13 @@ function checkCollisions() {
         px - 50 < o.x + o.w &&
         py + 18 > o.y &&
         py - 18 < o.y + o.h;
-    } else if (o.type === "bird") {
-      hit = dist(px, py, o.x, o.y) < 35;
+    } else if (o.type === "dragon") {
+      hit = dist(px, py, o.x, o.y) < 40;
+      if (!hit && o.fireLength > 0) {
+        for (let f = 0; f < o.fireLength; f += 8) {
+          if (dist(px, py, o.x + 28 + f, o.y - 3) < 20) { hit = true; break; }
+        }
+      }
     }
     if (hit) {
       triggerCrash();
@@ -370,6 +468,84 @@ function drawCrashParticles() {
     );
     fill(c);
     circle(p.x, p.y, p.size * p.life);
+  }
+}
+
+function drawTanks() {
+  for (let t of tanks) {
+    push();
+    translate(t.x, t.y);
+    // treads
+    fill(40, 50, 30);
+    noStroke();
+    rect(-25, -8, 50, 10, 4);
+    fill(30, 40, 20);
+    for (let wx = -22; wx < 23; wx += 9) {
+      circle(wx, -3, 8);
+    }
+    // body
+    fill(60, 80, 40);
+    rect(-20, -18, 40, 12, 3);
+    // turret
+    fill(50, 70, 35);
+    ellipse(0, -22, 24, 14);
+    // barrel
+    stroke(40, 55, 25);
+    strokeWeight(3);
+    line(0, -24, 0, -40);
+    noStroke();
+    // muzzle flash
+    if (frameCount - t.lastShot < 5) {
+      fill(255, 200, 50, 200);
+      circle(0, -42, 8);
+    }
+    pop();
+  }
+}
+
+function updateTanks() {
+  for (let t of tanks) {
+    let screenX = t.x - scrollX;
+    if (screenX > -100 && screenX < width + 100) {
+      if (frameCount - t.lastShot > t.shootInterval) {
+        t.lastShot = frameCount;
+        projectiles.push({
+          x: t.x - scrollX,
+          y: t.y - 42,
+          vy: -6 - random(2),
+          vx: random(-0.5, 0.5),
+          life: 1.0,
+        });
+      }
+    }
+  }
+}
+
+function drawProjectiles() {
+  for (let p of projectiles) {
+    noStroke();
+    fill(255, 100, 30, p.life * 255);
+    circle(p.x, p.y, 6);
+    fill(255, 200, 50, p.life * 150);
+    circle(p.x, p.y - 4, 4);
+  }
+}
+
+function updateProjectiles() {
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    let p = projectiles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 0.008;
+    if (p.life <= 0 || p.y < -20) {
+      projectiles.splice(i, 1);
+      continue;
+    }
+    if (dist(p.x, p.y, plane.x, plane.y) < 25) {
+      projectiles.splice(i, 1);
+      triggerCrash();
+      return;
+    }
   }
 }
 
