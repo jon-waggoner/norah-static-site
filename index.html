@@ -81,9 +81,34 @@
     }
 
     .game-icon {
-      font-size: 4rem;
       margin-bottom: 1rem;
       display: block;
+    }
+
+    .game-icon img {
+      display: inline-block;
+    }
+
+    .icon-dog {
+      width: 80px;
+      height: 80px;
+      animation: spin 4s linear infinite;
+    }
+
+    .icon-plane {
+      width: 120px;
+      height: 43px;
+      animation: bob 2s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
 
     .game-title {
@@ -115,14 +140,14 @@
   <div class="games">
     <div class="card-stars">
       <a href="/star-catcher/" class="game-card">
-        <span class="game-icon">&#11088;</span>
+        <span class="game-icon"><img src="star-catcher/dog.png" alt="Puppy" class="icon-dog"></span>
         <div class="game-title">Star Catcher</div>
         <div class="game-desc">Catch falling stars in your basket! Watch out for the bonus puppy!</div>
       </a>
     </div>
     <div class="card-flight">
       <a href="/flight/" class="game-card">
-        <span class="game-icon">&#9992;&#65039;</span>
+        <span class="game-icon"><img src="flight/plane.png" alt="Airplane" class="icon-plane"></span>
         <div class="game-title">Sky Pilot</div>
         <div class="game-desc">Fly your plane, dodge obstacles, and land safely!</div>
       </a>
