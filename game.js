@@ -10,6 +10,12 @@ let spawnRate = 60;
 let frameCounter = 0;
 let level = 1;
 let bgStars = [];
+let dogImg;
+let floatingTexts = [];
+
+function preload() {
+  dogImg = loadImage("dog.png");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -47,11 +53,18 @@ function draw() {
     let s = stars[i];
     s.y += starSpeed;
     s.angle += s.spin;
-    drawStar(s);
+    if (s.isDog) {
+      drawDog(s);
+    } else {
+      drawStar(s);
+    }
 
     if (catchesStar(s)) {
-      score++;
-      spawnCatchParticles(s.x, s.y, s.color);
+      score += s.points;
+      if (s.isDog) {
+        floatingTexts.push({ x: s.x, y: s.y, text: "+3", life: 1.0 });
+      }
+      spawnCatchParticles(s.x, s.y, s.isDog ? color(255, 200, 100) : s.color);
       stars.splice(i, 1);
     } else if (s.y > height + 20) {
       missed++;
@@ -63,6 +76,7 @@ function draw() {
   }
 
   updateParticles();
+  updateFloatingTexts();
   drawBasket();
   drawHUD();
 }
@@ -86,13 +100,16 @@ function makeStar() {
     color(150, 130, 255),
     color(255, 140, 50),
   ];
+  let isDog = random() < 0.2;
   return {
     x: random(30, width - 30),
     y: -20,
-    size: random(18, 30),
+    size: isDog ? 50 : random(18, 30),
     color: random(colors),
     angle: 0,
     spin: random(-0.05, 0.05),
+    isDog: isDog,
+    points: isDog ? 3 : 1,
   };
 }
 
@@ -118,6 +135,23 @@ function drawStar(s) {
     vertex(cos(angle) * r, sin(angle) * r);
   }
   endShape(CLOSE);
+  pop();
+}
+
+function drawDog(s) {
+  push();
+  translate(s.x, s.y);
+  rotate(s.angle);
+  imageMode(CENTER);
+  image(dogImg, 0, 0, s.size, s.size);
+  pop();
+
+  // golden glow around the dog
+  push();
+  noFill();
+  stroke(255, 220, 100, 80 + 40 * sin(frameCount * 0.1));
+  strokeWeight(2);
+  circle(s.x, s.y, s.size + 10);
   pop();
 }
 
@@ -184,6 +218,23 @@ function updateParticles() {
   }
 }
 
+function updateFloatingTexts() {
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    let ft = floatingTexts[i];
+    ft.y -= 2;
+    ft.life -= 0.02;
+    if (ft.life <= 0) {
+      floatingTexts.splice(i, 1);
+      continue;
+    }
+    fill(255, 220, 100, ft.life * 255);
+    noStroke();
+    textSize(28);
+    textStyle(BOLD);
+    text(ft.text, ft.x, ft.y);
+  }
+}
+
 function drawHUD() {
   noStroke();
 
@@ -244,6 +295,7 @@ function mousePressed() {
     gameOver = false;
     stars = [];
     particles = [];
+    floatingTexts = [];
     frameCounter = 0;
   }
 }
