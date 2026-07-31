@@ -15,6 +15,7 @@ let crashParticles = [];
 let levelCompleteTimer = 0;
 let bgGradient;
 let planeImg;
+let dragonImg;
 let touchActive = false;
 let stars = [];
 let tanks = [];
@@ -22,6 +23,7 @@ let projectiles = [];
 
 function preload() {
   planeImg = loadImage("plane.png");
+  dragonImg = loadImage("dragon.png");
 }
 
 function setup() {
@@ -269,55 +271,12 @@ function drawObstacles() {
         }
       }
     } else if (o.type === "dragon") {
-      let flap = sin(frameCount * 0.1 + o.wingPhase) * 15;
       push();
       translate(o.x, o.y);
 
-      // wings
-      fill(80, 20, 20);
-      noStroke();
-      beginShape();
-      vertex(0, -5);
-      vertex(-20, -25 + flap);
-      vertex(-10, -10 + flap * 0.5);
-      vertex(0, -3);
-      endShape(CLOSE);
-      beginShape();
-      vertex(0, -5);
-      vertex(20, -25 + flap);
-      vertex(10, -10 + flap * 0.5);
-      vertex(0, -3);
-      endShape(CLOSE);
-
-      // body
-      fill(60, 140, 40);
-      ellipse(0, 0, 35, 16);
-
-      // head
-      fill(50, 120, 35);
-      ellipse(20, -3, 16, 12);
-
-      // eye
-      fill(255, 200, 0);
-      circle(24, -5, 4);
-      fill(0);
-      circle(24.5, -5, 2);
-
-      // horns
-      stroke(100, 80, 30);
-      strokeWeight(2);
-      line(18, -9, 15, -16);
-      line(22, -9, 25, -16);
-      noStroke();
-
-      // tail
-      fill(50, 110, 30);
-      beginShape();
-      vertex(-17, 0);
-      vertex(-35, -8);
-      vertex(-30, 0);
-      vertex(-35, 8);
-      endShape(CLOSE);
+      // dragon sprite
+      imageMode(CENTER);
+      image(dragonImg, 0, 0, 70, 35);
 
       // fire breath
       o.fireTimer--;
@@ -335,7 +294,8 @@ function drawObstacles() {
           let r = 255;
           let g = map(f, 0, o.fireLength, 200, 50);
           fill(r, g, 0, alpha);
-          circle(28 + f, -3 + flicker, map(f, 0, o.fireLength, 8, 3));
+          noStroke();
+          circle(-35 - f, 0 + flicker, map(f, 0, o.fireLength, 8, 3));
         }
       }
 
