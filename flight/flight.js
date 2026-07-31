@@ -14,6 +14,11 @@ let landingRunwayStart;
 let crashParticles = [];
 let levelCompleteTimer = 0;
 let bgGradient;
+let planeImg;
+
+function preload() {
+  planeImg = loadImage("plane.png");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -249,54 +254,13 @@ function drawPlane() {
   push();
   translate(plane.x, plane.y);
   rotate(plane.angle);
-
-  fill(220, 60, 60);
-  noStroke();
-  beginShape();
-  vertex(30, 0);
-  vertex(-25, -8);
-  vertex(-30, -5);
-  vertex(-30, 5);
-  vertex(-25, 8);
-  endShape(CLOSE);
-
-  fill(180, 40, 40);
-  beginShape();
-  vertex(-20, -8);
-  vertex(-30, -22);
-  vertex(-28, -22);
-  vertex(-15, -8);
-  endShape(CLOSE);
-
-  beginShape();
-  vertex(-20, 8);
-  vertex(-30, 22);
-  vertex(-28, 22);
-  vertex(-15, 8);
-  endShape(CLOSE);
-
-  fill(240, 240, 240);
-  beginShape();
-  vertex(-5, -6);
-  vertex(-18, -18);
-  vertex(-15, -18);
-  vertex(0, -6);
-  endShape(CLOSE);
-
-  beginShape();
-  vertex(-5, 6);
-  vertex(-18, 18);
-  vertex(-15, 18);
-  vertex(0, 6);
-  endShape(CLOSE);
-
-  fill(180, 220, 255, 200);
-  ellipse(20, -2, 12, 8);
+  imageMode(CENTER);
+  image(planeImg, 0, 0, 120, 43);
 
   if (plane.thrust && frameCount % 4 < 2) {
     fill(255, 150, 0);
     noStroke();
-    triangle(-30, -3, -30, 3, -40 - random(5), 0);
+    triangle(-60, -3, -60, 3, -70 - random(5), 0);
   }
 
   pop();
@@ -357,12 +321,12 @@ function checkCollisions() {
     let hit = false;
     if (o.type === "building") {
       hit =
-        px + 25 > o.x &&
-        px - 25 < o.x + o.w &&
-        py + 8 > o.y &&
-        py - 8 < o.y + o.h;
+        px + 50 > o.x &&
+        px - 50 < o.x + o.w &&
+        py + 18 > o.y &&
+        py - 18 < o.y + o.h;
     } else if (o.type === "bird") {
-      hit = dist(px, py, o.x, o.y) < 25;
+      hit = dist(px, py, o.x, o.y) < 35;
     }
     if (hit) {
       triggerCrash();
