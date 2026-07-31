@@ -6,7 +6,7 @@ let groundY;
 let scrollX = 0;
 let levelLength = 6000;
 let level = 1;
-let baseSpeed = 3;
+let baseSpeed = 9;
 let speed;
 let state = "start";
 let runwayStart, runwayEnd;
@@ -41,7 +41,7 @@ function resetLevel() {
 
   runwayStart = 0;
   runwayEnd = 400;
-  landingRunwayStart = levelLength - 500;
+  landingRunwayStart = levelLength - 800;
 
   generateMountains();
   generateObstacles();
@@ -63,34 +63,35 @@ function generateMountains() {
 function generateObstacles() {
   let safeZoneEnd = runwayEnd + 300;
   let landingZoneStart = landingRunwayStart - 300;
-  let count = 8 + level * 4;
+  let buildingCount = 6 + level * 3;
+  let birdCount = 24 + level * 8;
 
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < buildingCount; i++) {
     let ox = random(safeZoneEnd, landingZoneStart);
-    let type = random() < 0.5 ? "building" : "bird";
+    let h = random(80, 200 + level * 20);
+    obstacles.push({
+      type: "building",
+      x: ox,
+      y: groundY - h,
+      w: random(40, 70),
+      h: h,
+      color: [random(60, 120), random(60, 120), random(80, 140)],
+    });
+  }
 
-    if (type === "building") {
-      let h = random(80, 200 + level * 20);
-      obstacles.push({
-        type: "building",
-        x: ox,
-        y: groundY - h,
-        w: random(40, 70),
-        h: h,
-        color: [random(60, 120), random(60, 120), random(80, 140)],
-      });
-    } else {
-      obstacles.push({
-        type: "bird",
-        x: ox,
-        y: random(100, groundY - 150),
-        w: 30,
-        h: 15,
-        wingPhase: random(TWO_PI),
-      });
-    }
+  for (let i = 0; i < birdCount; i++) {
+    let ox = random(safeZoneEnd, landingZoneStart);
+    obstacles.push({
+      type: "bird",
+      x: ox,
+      y: random(60, groundY - 100),
+      w: 30,
+      h: 15,
+      wingPhase: random(TWO_PI),
+    });
   }
 }
+
 
 function generateClouds() {
   for (let i = 0; i < 15; i++) {
@@ -120,7 +121,7 @@ function draw() {
   translate(-scrollX, 0);
   drawGround();
   drawRunway(runwayStart, runwayEnd);
-  drawRunway(landingRunwayStart, landingRunwayStart + 500);
+  drawRunway(landingRunwayStart, landingRunwayStart + 800);
   drawObstacles();
   pop();
 
@@ -304,17 +305,17 @@ function drawPlane() {
 function updatePlane() {
   let lift = 0;
   if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
-    lift = -0.3;
+    lift = -0.6;
     plane.thrust = true;
   } else if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
-    lift = 0.2;
+    lift = 0.4;
     plane.thrust = false;
   } else {
     plane.thrust = false;
   }
 
-  plane.vy += 0.15 + lift;
-  plane.vy = constrain(plane.vy, -5, 6);
+  plane.vy += 0.2 + lift;
+  plane.vy = constrain(plane.vy, -7, 8);
   plane.y += plane.vy;
 
   plane.angle = plane.vy * 0.04;
@@ -329,9 +330,9 @@ function updatePlane() {
     let planeWorldX = plane.x + scrollX;
     let onLandingRunway =
       planeWorldX > landingRunwayStart &&
-      planeWorldX < landingRunwayStart + 500;
+      planeWorldX < landingRunwayStart + 800;
 
-    if (onLandingRunway && plane.vy < 3 && abs(plane.angle) < 0.3) {
+    if (onLandingRunway && plane.vy < 5 && abs(plane.angle) < 0.5) {
       state = "landed";
       levelCompleteTimer = 0;
       plane.vy = 0;
