@@ -141,6 +141,9 @@
     .card-minesweeper .game-card { border-color: rgba(100, 255, 150, 0.3); }
     .card-minesweeper .game-card:hover { border-color: rgba(100, 255, 150, 0.6); }
 
+    .card-runner .game-card { border-color: rgba(255, 150, 50, 0.3); }
+    .card-runner .game-card:hover { border-color: rgba(255, 150, 50, 0.6); }
+
     .icon-mine {
       font-size: 56px;
       line-height: 1;
@@ -150,6 +153,18 @@
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.15); }
+    }
+
+    .icon-runner {
+      font-size: 56px;
+      line-height: 1;
+      animation: bounce 1s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-12px); }
+      60% { transform: translateY(-4px); }
     }
   </style>
 </head>
@@ -179,6 +194,13 @@
         <span class="game-icon"><span class="icon-mine">💣</span></span>
         <div class="game-title">Minesweeper</div>
         <div class="game-desc">Find all the safe squares without hitting a mine!</div>
+      </a>
+    </div>
+    <div class="card-runner">
+      <a href="/mario-runner/" class="game-card">
+        <span class="game-icon"><span class="icon-runner">🏃</span></span>
+        <div class="game-title">Super Runner</div>
+        <div class="game-desc">Run, jump, and collect coins in this side-scrolling adventure!</div>
       </a>
     </div>
   </div>
