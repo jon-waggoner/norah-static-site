@@ -52,8 +52,8 @@ function resetLevel() {
   };
 
   runwayStart = 0;
-  runwayEnd = 400;
-  landingRunwayStart = levelLength - 800;
+  runwayEnd = 800;
+  landingRunwayStart = levelLength - 1600;
 
   generateMountains();
   generateObstacles();
@@ -136,7 +136,7 @@ function draw() {
   translate(-scrollX, 0);
   drawGround();
   drawRunway(runwayStart, runwayEnd);
-  drawRunway(landingRunwayStart, landingRunwayStart + 800);
+  drawRunway(landingRunwayStart, landingRunwayStart + 1600);
   drawObstacles();
   pop();
 
@@ -336,7 +336,7 @@ function updatePlane() {
     let planeWorldX = plane.x + scrollX;
     let onLandingRunway =
       planeWorldX > landingRunwayStart &&
-      planeWorldX < landingRunwayStart + 800;
+      planeWorldX < landingRunwayStart + 1600;
 
     if (onLandingRunway && plane.vy < 5 && abs(plane.angle) < 0.5) {
       state = "landed";
